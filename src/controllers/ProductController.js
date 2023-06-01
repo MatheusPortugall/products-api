@@ -1,6 +1,7 @@
 const ProductListDTO = require("../dto/ProductListDTO")
 const Price = require("../models/Price")
 const Product = require("../models/Product")
+const { Op } = require('sequelize')
 
 const item = {
     id: "5bda0610-0005-11ee-be56-0242ac120002",
@@ -19,6 +20,11 @@ const item = {
 
 const getItemsSearch = async (req, res) => {
     try {
+        const query = req.query.q
+        if(query == null || query == ''){
+            res.status(400).json({ message: "Parameter for search filter 'q' is mandatory" })
+            return
+        }
         let listProducts = []
         let idsProducts = []
         const products = await Product.findAll({
@@ -27,6 +33,11 @@ const getItemsSearch = async (req, res) => {
                   model: Price
                 },
               ],
+              where: {
+                title: {
+                    [Op.like]: `%${query}%`
+                }
+              },
             limit: 4
           })
         if(products.length > 0) {
